@@ -9,7 +9,7 @@ function App() {
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch('http://localhost:8000/recent-listings');
+      const response = await fetch('https://directoffer-backend.onrender.com');
       const data = await response.json();
       setHistory(data);
     } catch (error) {
@@ -24,7 +24,7 @@ function App() {
   const handleDelete = async (addressToDelete) => {
     if (!window.confirm(`Are you sure you want to delete ${addressToDelete}?`)) return;
     try {
-      await fetch(`http://localhost:8000/delete-listing/${encodeURIComponent(addressToDelete)}`, {
+      await fetch(`https://directoffer-backend.onrender.com${encodeURIComponent(addressToDelete)}`, {
         method: 'DELETE',
       });
       fetchHistory();
@@ -43,7 +43,7 @@ function App() {
     setIsLoading(true); // Start loading animation
 
     try {
-      const response = await fetch('http://localhost:8000/list-property', {
+      const response = await fetch('https://directoffer-backend.onrender.com', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: address, price: homeValue })
