@@ -129,6 +129,7 @@ function App() {
             {isLoading ? "Saving to Database..." : "Save & Calculate Savings"}
           </button>
         </div>
+        export default App;
 
         {listingResult && (
           <div id="printable-area" style={{ marginTop: '25px', padding: '20px', backgroundColor: '#F0FDF4', borderRadius: '8px', border: '1px solid #BBF7D0' }}>
