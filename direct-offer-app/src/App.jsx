@@ -128,10 +128,51 @@ function App() {
           >
             {isLoading ? "Saving to Database..." : "Save & Calculate Savings"}
           </button>
-        </div>
-        export default App;
-
-        {listingResult && (
+       {listingResult && (
           <div id="printable-area" style={{ marginTop: '25px', padding: '20px', backgroundColor: '#F0FDF4', borderRadius: '8px', border: '1px solid #BBF7D0' }}>
             <h4 style={{ color: '#166534', margin: '0 0 15px 0' }}>✅ Success! Listing Created</h4>
-            <div style={{ fontSize: '0.9rem', color: '#1F2937'}}>
+            <div style={{ fontSize: '0.9rem', color: '#1F2937' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                <span>Standard 6% Commission:</span>
+                <span style={{ color: '#991B1B' }}>${listingResult.standard_comm}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <span>DirectOffer 3% Fee:</span>
+                <span style={{ color: '#166534' }}>-${listingResult.direct_offer_fee}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.1rem', borderTop: '2px solid #BBF7D0', paddingTop: '10px' }}>
+                <span>Total Savings:</span>
+                <span style={{ color: '#166534' }}>${listingResult.savings}</span>
+              </div>
+            </div>
+            <button className="no-print" onClick={() => window.print()} style={{ marginTop: '20px', width: '100%', padding: '10px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>📄 Export PDF Report</button>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginTop: '40px', width: '100%', maxWidth: '500px' }} className="no-print">
+        <h4 style={{ color: '#2C3E50', borderBottom: '2px solid #DCDFE6', paddingBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
+          Recent Activity <span>({history?.length || 0})</span>
+        </h4>
+        {(!history || history.length === 0) ? (
+          <p style={{ color: '#BDC3C7', textAlign: 'center', marginTop: '20px' }}>Your database is currently empty.</p>
+        ) : (
+          history.map((item, index) => (
+            <div key={index} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '8px', marginBottom: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontWeight: 'bold', color: '#34495E' }}>{item.address}</div>
+                <div style={{ fontSize: '0.8rem', color: '#7F8C8D' }}>Value: ${item.price?.toLocaleString()}</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div style={{ color: '#27AE60', fontWeight: 'bold' }}>+${item.savings?.toLocaleString()}</div>
+                <button onClick={() => handleDelete(item.address)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#E74C3C' }}>🗑️</button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
