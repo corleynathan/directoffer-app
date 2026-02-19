@@ -210,10 +210,19 @@ function App() {
               );
             })()}
 
-            <div className="no-print" style={{ marginTop: '20px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              <button onClick={() => window.print()} style={{ flex: 1, padding: '12px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>💾 Download PDF</button>
-              <button onClick={() => setShowOfferForm(true)} style={{ flex: 1.5, padding: '12px', backgroundColor: '#27AE60', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>📩 Submit Digital Offer</button>
-              <button onClick={() => setListingResult(null)} style={{ width: '100%', padding: '12px', backgroundColor: '#ECF0F1', color: '#7F8C8D', border: 'none', borderRadius: '6px' }}>Reset</button>
+            {/* UPDATED: CLEANED & CENTERED BUTTON SECTION */}
+            <div className="no-print" style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => window.print()} style={{ flex: 1, padding: '12px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                  💾 Download PDF
+                </button>
+                <button onClick={() => setShowOfferForm(true)} style={{ flex: 1, padding: '12px', backgroundColor: '#27AE60', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                  📩 Submit Offer
+                </button>
+              </div>
+              <button onClick={() => setListingResult(null)} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', color: '#7F8C8D', border: '1px solid #DCDFE6', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}>
+                Reset Analysis
+              </button>
             </div>
           </div>
         )}
