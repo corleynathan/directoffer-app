@@ -163,33 +163,45 @@ function App() {
             <h3 style={{ color: '#166534', margin: '0 0 5px 0' }}>Seller Net Sheet Comparison</h3>
             <p style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#374151' }}>Property: <strong>{listingResult.address}</strong></p>
             
-            <table>
-              <thead>
-                <tr><th>Description</th><th>Traditional (6%)</th><th>DirectOffer (3%)</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Sale Price</td>
-                  <td>${cleanNum(listingResult.price).toLocaleString()}</td>
-                  <td>${cleanNum(listingResult.price).toLocaleString()}</td>
-                </tr>
-                <tr>
-                  <td>Brokerage Fee</td>
-                  <td style={{ color: '#991B1B' }}>-${cleanNum(listingResult.standard_comm).toLocaleString()}</td>
-                  <td style={{ color: '#166534', fontWeight: 'bold' }}>-${cleanNum(listingResult.direct_offer_fee).toLocaleString()}</td>
-                </tr>
-                <tr style={{ backgroundColor: '#DCFCE7', fontWeight: 'bold' }}>
-                  <td>ESTIMATED NET</td>
-                  <td>${(cleanNum(listingResult.price) - cleanNum(listingResult.standard_comm)).toLocaleString()}</td>
-                  <td style={{ color: '#15803D' }}>${cleanNum(listingResult.price - cleanNum(listingResult.direct_offer_fee)).toLocaleString()}</td>
-                </tr>
-              </tbody>
-            </table>
+            {(() => {
+              // FIX: Ensure we are pulling the price correctly from the backend response
+              const priceVal = cleanNum(listingResult.price);
+              const tradComm = priceVal * 0.06;
+              const doFee = priceVal * 0.03;
+              const savingsVal = tradComm - doFee;
 
-            <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#15803D', color: 'white', borderRadius: '6px', textAlign: 'center' }}>
-              <span style={{ fontSize: '0.9rem' }}>Additional Equity Gained:</span>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${cleanNum(listingResult.savings).toLocaleString()}</div>
-            </div>
+              return (
+                <>
+                  <table>
+                    <thead>
+                      <tr><th>Description</th><th>Traditional (6%)</th><th>DirectOffer (3%)</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Sale Price</td>
+                        <td>${priceVal.toLocaleString()}</td>
+                        <td>${priceVal.toLocaleString()}</td>
+                      </tr>
+                      <tr>
+                        <td>Brokerage Fee</td>
+                        <td style={{ color: '#991B1B' }}>-${tradComm.toLocaleString()}</td>
+                        <td style={{ color: '#166534', fontWeight: 'bold' }}>-${doFee.toLocaleString()}</td>
+                      </tr>
+                      <tr style={{ backgroundColor: '#DCFCE7', fontWeight: 'bold' }}>
+                        <td>ESTIMATED NET</td>
+                        <td>${(priceVal - tradComm).toLocaleString()}</td>
+                        <td style={{ color: '#15803D' }}>${(priceVal - doFee).toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#15803D', color: 'white', borderRadius: '6px', textAlign: 'center' }}>
+                    <span style={{ fontSize: '0.9rem' }}>Additional Equity Gained:</span>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${savingsVal.toLocaleString()}</div>
+                  </div>
+                </>
+              );
+            })()}
 
             <div className="no-print" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
               <button onClick={() => setShowOfferForm(true)} style={{ flex: 1.5, padding: '12px', backgroundColor: '#27AE60', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>📩 Submit Digital Offer</button>
