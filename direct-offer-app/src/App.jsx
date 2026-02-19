@@ -116,16 +116,25 @@ function App() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f7f6', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '50px 20px' }}>
       
+      {/* IMPROVED CSS FOR PRINT CENTERING */}
       <style>{`
         @media print { 
           .no-print { display: none !important; } 
-          #printable-area { border: 2px solid #166534 !important; padding: 40px !important; width: 100% !important; background-color: white !important; }
-          body { background-color: white !important; }
-          .pdf-only-header { display: block !important; margin-bottom: 20px; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+          body { background-color: white !important; margin: 0 !important; padding: 0 !important; display: block !important; }
+          #printable-area { 
+            border: 2px solid #166534 !important; 
+            padding: 30px !important; 
+            width: 90% !important; 
+            margin: 20px auto !important; 
+            background-color: white !important; 
+            display: block !important;
+          }
+          .pdf-only-header { display: block !important; margin-bottom: 25px; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+          table { width: 100% !important; border-collapse: collapse !important; }
         }
         .pdf-only-header { display: none; }
         .input-focus:focus { border-color: #3498DB !important; outline: none; box-shadow: 0 0 5px rgba(52,152,219,0.3); }
-        .input-field { padding: 12px; width: 100%; borderRadius: 6px; border: 2px solid #DCDFE6; boxSizing: border-box; marginBottom: 15px; }
+        .input-field { padding: 12px; width: 100%; border-radius: 6px; border: 2px solid #DCDFE6; box-sizing: border-box; margin-bottom: 15px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
         th { text-align: left; padding: 12px; border-bottom: 2px solid #BBF7D0; color: #166534; }
         td { padding: 12px; border-bottom: 1px solid #BBF7D0; }
@@ -159,10 +168,9 @@ function App() {
           </div>
         )}
 
-        {/* VIEW 2: THE NET SHEET & OFFER FORM TRIGGER */}
+        {/* VIEW 2: THE NET SHEET & ACTION BUTTONS */}
         {listingResult && !showOfferForm && (
           <div id="printable-area">
-            {/* PDF ONLY HEADER */}
             <div className="pdf-only-header">
               <h1 style={{ color: '#2C3E50', margin: 0 }}>DirectOffer Report</h1>
               <p style={{ color: '#7F8C8D' }}>Verified Savings & Equity Analysis</p>
@@ -210,17 +218,17 @@ function App() {
               );
             })()}
 
-            {/* UPDATED: CLEANED & CENTERED BUTTON SECTION */}
-            <div className="no-print" style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={() => window.print()} style={{ flex: 1, padding: '12px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
+            {/* STABLE CENTERING FOR BUTTONS */}
+            <div className="no-print" style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+                <button onClick={() => window.print()} style={{ flex: 1, padding: '14px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
                   💾 Download PDF
                 </button>
-                <button onClick={() => setShowOfferForm(true)} style={{ flex: 1, padding: '12px', backgroundColor: '#27AE60', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                <button onClick={() => setShowOfferForm(true)} style={{ flex: 1, padding: '14px', backgroundColor: '#27AE60', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
                   📩 Submit Offer
                 </button>
               </div>
-              <button onClick={() => setListingResult(null)} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', color: '#7F8C8D', border: '1px solid #DCDFE6', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}>
+              <button onClick={() => setListingResult(null)} style={{ width: '100%', padding: '12px', backgroundColor: 'transparent', color: '#7F8C8D', border: '1px solid #DCDFE6', borderRadius: '6px', cursor: 'pointer' }}>
                 Reset Analysis
               </button>
             </div>
