@@ -7,18 +7,17 @@ function App() {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Defined URL here for easy updates
+  // Use your live Render URL here
   const API_URL = 'https://directoffer-backend.onrender.com';
 
   const fetchHistory = async () => {
     try {
       const response = await fetch(`${API_URL}/recent-listings`);
       const data = await response.json();
-      // Safety check: Ensure data is an array before setting state
       setHistory(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Could not fetch history:", error);
-      setHistory([]); // Set to empty array on error to prevent crash
+      setHistory([]);
     }
   };
 
@@ -43,9 +42,7 @@ function App() {
       alert("Please enter a valid property address.");
       return;
     }
-
     setIsLoading(true);
-
     try {
       const response = await fetch(`${API_URL}/list-property`, {
         method: 'POST',
@@ -128,7 +125,9 @@ function App() {
           >
             {isLoading ? "Saving to Database..." : "Save & Calculate Savings"}
           </button>
-       {listingResult && (
+        </div>
+
+        {listingResult && (
           <div id="printable-area" style={{ marginTop: '25px', padding: '20px', backgroundColor: '#F0FDF4', borderRadius: '8px', border: '1px solid #BBF7D0' }}>
             <h4 style={{ color: '#166534', margin: '0 0 15px 0' }}>✅ Success! Listing Created</h4>
             <div style={{ fontSize: '0.9rem', color: '#1F2937' }}>
