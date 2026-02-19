@@ -134,18 +134,19 @@ function App() {
               <tbody>
                 <tr>
                   <td>Sale Price</td>
-                  <td>${listingResult.price?.toLocaleString()}</td>
-                  <td>${listingResult.price?.toLocaleString()}</td>
+                  {/* We use Number() and a fallback to 0 to prevent NaN */}
+                  <td>${Number(listingResult.price || homeValue).toLocaleString()}</td>
+                  <td>${Number(listingResult.price || homeValue).toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td>Brokerage Fee</td>
-                  <td style={{ color: '#991B1B' }}>-${listingResult.standard_comm?.toLocaleString()}</td>
-                  <td style={{ color: '#166534', fontWeight: 'bold' }}>-${listingResult.direct_offer_fee?.toLocaleString()}</td>
+                  <td style={{ color: '#991B1B' }}>-${Number(listingResult.standard_comm || 0).toLocaleString()}</td>
+                  <td style={{ color: '#166534', fontWeight: 'bold' }}>-${Number(listingResult.direct_offer_fee || 0).toLocaleString()}</td>
                 </tr>
                 <tr style={{ backgroundColor: '#DCFCE7', fontWeight: 'bold' }}>
                   <td>ESTIMATED NET</td>
-                  <td>${(listingResult.price - listingResult.standard_comm).toLocaleString()}</td>
-                  <td style={{ color: '#15803D' }}>${(listingResult.price - listingResult.direct_offer_fee).toLocaleString()}</td>
+                  <td>${(Number(listingResult.price || homeValue) - Number(listingResult.standard_comm || 0)).toLocaleString()}</td>
+                  <td style={{ color: '#15803D' }}>${(Number(listingResult.price || homeValue) - Number(listingResult.direct_offer_fee || 0)).toLocaleString()}</td>
                 </tr>
               </tbody>
             </table>
