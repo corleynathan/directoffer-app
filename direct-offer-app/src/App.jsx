@@ -9,6 +9,14 @@ function App() {
 
   const API_URL = 'https://directoffer-backend.onrender.com';
 
+  // HELPER: Turns "$500,000" or "500000" into a clean number 500000
+  const cleanNum = (val) => {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    const cleaned = val.toString().replace(/[^0-9.-]+/g, "");
+    return parseFloat(cleaned) || 0;
+  };
+
   const fetchHistory = async () => {
     try {
       const response = await fetch(`${API_URL}/recent-listings`);
@@ -59,7 +67,7 @@ function App() {
     }
   };
 
-  const totalLifetimeSavings = history.reduce((sum, item) => sum + (Number(item.savings) || 0), 0);
+  const totalLifetimeSavings = history.reduce((sum, item) => sum + cleanNum(item.savings), 0);
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f7f6', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '50px 20px' }}>
@@ -123,12 +131,12 @@ function App() {
             <h3 style={{ color: '#166534', margin: '0 0 5px 0' }}>Seller Net Sheet Comparison</h3>
             <p style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#374151' }}>Property: <strong>{listingResult.address}</strong></p>
             
-            {/* Helper variables to ensure no NaN occurs */}
             {(() => {
-              const currentPrice = Number(listingResult.price || homeValue || 0);
-              const tradComm = Number(listingResult.standard_comm || (currentPrice * 0.06) || 0);
-              const doFee = Number(listingResult.direct_offer_fee || (currentPrice * 0.03) || 0);
-              const savings = Number(listingResult.savings || (tradComm - doFee) || 0);
+              // Using cleanNum here guarantees we have actual numbers for math
+              const priceVal = cleanNum(listingResult.price) || homeValue;
+              const tradComm = cleanNum(listingResult.standard_comm) || (priceVal * 0.06);
+              const doFee = cleanNum(listingResult.direct_offer_fee) || (priceVal * 0.03);
+              const savingsVal = cleanNum(listingResult.savings) || (tradComm - doFee);
 
               return (
                 <>
@@ -143,8 +151,8 @@ function App() {
                     <tbody>
                       <tr>
                         <td>Sale Price</td>
-                        <td>${currentPrice.toLocaleString()}</td>
-                        <td>${currentPrice.toLocaleString()}</td>
+                        <td>${priceVal.toLocaleString()}</td>
+                        <td>${priceVal.toLocaleString()}</td>
                       </tr>
                       <tr>
                         <td>Brokerage Fee</td>
@@ -153,15 +161,15 @@ function App() {
                       </tr>
                       <tr style={{ backgroundColor: '#DCFCE7', fontWeight: 'bold' }}>
                         <td>ESTIMATED NET</td>
-                        <td>${(currentPrice - tradComm).toLocaleString()}</td>
-                        <td style={{ color: '#15803D' }}>${(currentPrice - doFee).toLocaleString()}</td>
+                        <td>${(priceVal - tradComm).toLocaleString()}</td>
+                        <td style={{ color: '#15803D' }}>${(priceVal - doFee).toLocaleString()}</td>
                       </tr>
                     </tbody>
                   </table>
 
                   <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#15803D', color: 'white', borderRadius: '6px', textAlign: 'center' }}>
                     <span style={{ fontSize: '0.9rem' }}>Additional Equity Gained:</span>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${savings.toLocaleString()}</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${savingsVal.toLocaleString()}</div>
                   </div>
                 </>
               );
@@ -189,10 +197,10 @@ function App() {
             <div key={index} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '8px', marginBottom: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontWeight: 'bold', color: '#34495E' }}>{item.address}</div>
-                <div style={{ fontSize: '0.8rem', color: '#7F8C8D' }}>Value: ${Number(item.price).toLocaleString()}</div>
+                <div style={{ fontSize: '0.8rem', color: '#7F8C8D' }}>Value: ${cleanNum(item.price).toLocaleString()}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ color: '#27AE60', fontWeight: 'bold' }}>+${Number(item.savings).toLocaleString()}</div>
+                <div style={{ color: '#27AE60', fontWeight: 'bold' }}>+${cleanNum(item.savings).toLocaleString()}</div>
                 <button onClick={() => handleDelete(item.address)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E74C3C' }}>🗑️</button>
               </div>
             </div>
