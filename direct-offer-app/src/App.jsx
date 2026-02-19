@@ -134,4 +134,4 @@ function App() {
         {listingResult && (
           <div id="printable-area" style={{ marginTop: '25px', padding: '20px', backgroundColor: '#F0FDF4', borderRadius: '8px', border: '1px solid #BBF7D0' }}>
             <h4 style={{ color: '#166534', margin: '0 0 15px 0' }}>✅ Success! Listing Created</h4>
-            <div style={{ fontSize: '0.9rem', color: '#1F2937'
+            <div style={{ fontSize: '0.9rem', color: '#1F2937'}}>
