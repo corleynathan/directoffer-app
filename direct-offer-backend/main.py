@@ -5,9 +5,16 @@ import sqlite3
 
 app = FastAPI()
 
+# Updated CORS for Vercel
+origins = [
+    "https://directoffer-app.vercel.app",
+    "http://localhost:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -32,6 +39,10 @@ init_db() # Run this when the app starts
 class Property(BaseModel):
     address: str
     price: float
+
+@app.get("/")
+async def root():
+    return {"message": "Backend is running and CORS is configured!"}
 
 @app.post("/list-property")
 async def list_property(property: Property):
