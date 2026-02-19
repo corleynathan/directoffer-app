@@ -60,6 +60,9 @@ function App() {
     }
   };
 
+// Calculate Lifetime Savings
+  const totalLifetimeSavings = history.reduce((sum, item) => sum + (item.savings || 0), 0);
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f7f6', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '50px 20px' }}>
       
@@ -150,9 +153,18 @@ function App() {
       </div>
 
       <div style={{ marginTop: '40px', width: '100%', maxWidth: '500px' }} className="no-print">
+        {/* New Lifetime Savings Summary Card */}
+        <div style={{ backgroundColor: '#2C3E50', color: 'white', padding: '20px', borderRadius: '12px', marginBottom: '30px', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
+          <div style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Client Savings</div>
+          <div style={{ fontSize: '2.2rem', fontWeight: 'bold', color: '#27AE60' }}>
+            ${totalLifetimeSavings.toLocaleString()}
+          </div>
+        </div>
+
         <h4 style={{ color: '#2C3E50', borderBottom: '2px solid #DCDFE6', paddingBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
           Recent Activity <span>({history?.length || 0})</span>
         </h4>
+        
         {(!history || history.length === 0) ? (
           <p style={{ color: '#BDC3C7', textAlign: 'center', marginTop: '20px' }}>Your database is currently empty.</p>
         ) : (
@@ -170,8 +182,5 @@ function App() {
           ))
         )}
       </div>
-    </div>
-  );
-}
 
 export default App;
