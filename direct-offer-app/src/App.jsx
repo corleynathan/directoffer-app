@@ -7,7 +7,6 @@ function App() {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Your live Render URL
   const API_URL = 'https://directoffer-backend.onrender.com';
 
   const fetchHistory = async () => {
@@ -60,16 +59,21 @@ function App() {
     }
   };
 
-  // NEW FEATURE: Calculate Lifetime Savings from history array
   const totalLifetimeSavings = history.reduce((sum, item) => sum + (item.savings || 0), 0);
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f7f6', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '50px 20px' }}>
       
       <style>{`
-        @media print { .no-print { display: none !important; } #printable-area { border: none !important; } }
+        @media print { 
+          .no-print { display: none !important; } 
+          #printable-area { border: none !important; padding: 0 !important; }
+          body { background-color: white !important; }
+        }
         .input-focus:focus { border-color: #3498DB !important; outline: none; box-shadow: 0 0 5px rgba(52,152,219,0.3); }
-        .btn-active:active { transform: scale(0.98); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+        th { text-align: left; padding: 10px; border-bottom: 2px solid #BBF7D0; color: #166534; }
+        td { padding: 10px; border-bottom: 1px solid #BBF7D0; }
       `}</style>
 
       <header style={{ marginBottom: '40px', textAlign: 'center' }} className="no-print">
@@ -77,7 +81,7 @@ function App() {
         <p style={{ color: '#7F8C8D' }}>Professional Home Valuation & Savings Tracker</p>
       </header>
 
-      <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '100%', maxWidth: '500px' }}>
+      <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '100%', maxWidth: '600px' }}>
         <div className="no-print">
           <h3 style={{ color: '#34495E', marginTop: 0 }}>Create New Listing</h3>
           
@@ -86,10 +90,10 @@ function App() {
             <input 
               type="text" 
               className="input-focus"
-              placeholder="e.g. 742 Evergreen Terrace" 
+              placeholder="e.g. 123 Main St" 
               value={address} 
               onChange={(e) => setAddress(e.target.value)} 
-              style={{ padding: '12px', width: '100%', borderRadius: '6px', border: '2px solid #DCDFE6', boxSizing: 'border-box', transition: 'all 0.3s' }} 
+              style={{ padding: '12px', width: '100%', borderRadius: '6px', border: '2px solid #DCDFE6', boxSizing: 'border-box' }} 
             />
           </div>
 
@@ -109,56 +113,57 @@ function App() {
             />
           </div>
 
-          <button 
-            onClick={handleListHome} 
-            disabled={isLoading || !address.trim()}
-            className="btn-active"
-            style={{ 
-              width: '100%', 
-              padding: '15px', 
-              backgroundColor: address.trim() ? '#2C3E50' : '#BDC3C7', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '6px', 
-              cursor: address.trim() ? 'pointer' : 'not-allowed', 
-              fontWeight: 'bold',
-              fontSize: '16px',
-              transition: 'background-color 0.3s'
-            }}
-          >
-            {isLoading ? "Saving to Database..." : "Save & Calculate Savings"}
+          <button onClick={handleListHome} disabled={isLoading || !address.trim()} style={{ width: '100%', padding: '15px', backgroundColor: address.trim() ? '#2C3E50' : '#BDC3C7', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
+            {isLoading ? "Saving..." : "Generate Comparison"}
           </button>
         </div>
 
         {listingResult && (
           <div id="printable-area" style={{ marginTop: '25px', padding: '20px', backgroundColor: '#F0FDF4', borderRadius: '8px', border: '1px solid #BBF7D0' }}>
-            <h4 style={{ color: '#166534', margin: '0 0 15px 0' }}>✅ Success! Listing Created</h4>
-            <div style={{ fontSize: '0.9rem', color: '#1F2937' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                <span>Standard 6% Commission:</span>
-                <span style={{ color: '#991B1B' }}>${listingResult.standard_comm}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span>DirectOffer 3% Fee:</span>
-                <span style={{ color: '#166534' }}>-${listingResult.direct_offer_fee}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.1rem', borderTop: '2px solid #BBF7D0', paddingTop: '10px' }}>
-                <span>Total Savings:</span>
-                <span style={{ color: '#166534' }}>${listingResult.savings}</span>
-              </div>
+            <h3 style={{ color: '#166534', margin: '0 0 5px 0' }}>Seller Net Sheet Comparison</h3>
+            <p style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#374151' }}>Property: <strong>{listingResult.address}</strong></p>
+            
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Traditional (6%)</th>
+                  <th>DirectOffer (3%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Sale Price</td>
+                  <td>${listingResult.price?.toLocaleString()}</td>
+                  <td>${listingResult.price?.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td>Brokerage Fee</td>
+                  <td style={{ color: '#991B1B' }}>-${listingResult.standard_comm?.toLocaleString()}</td>
+                  <td style={{ color: '#166534', fontWeight: 'bold' }}>-${listingResult.direct_offer_fee?.toLocaleString()}</td>
+                </tr>
+                <tr style={{ backgroundColor: '#DCFCE7', fontWeight: 'bold' }}>
+                  <td>ESTIMATED NET</td>
+                  <td>${(listingResult.price - listingResult.standard_comm).toLocaleString()}</td>
+                  <td style={{ color: '#15803D' }}>${(listingResult.price - listingResult.direct_offer_fee).toLocaleString()}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#15803D', color: 'white', borderRadius: '6px', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.9rem' }}>Additional Equity Gained:</span>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${listingResult.savings?.toLocaleString()}</div>
             </div>
-            <button className="no-print" onClick={() => window.print()} style={{ marginTop: '20px', width: '100%', padding: '10px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>📄 Export PDF Report</button>
+
+            <button className="no-print" onClick={() => window.print()} style={{ marginTop: '20px', width: '100%', padding: '10px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>📄 Export Professional Report</button>
           </div>
         )}
       </div>
 
-      <div style={{ marginTop: '40px', width: '100%', maxWidth: '500px' }} className="no-print">
-        {/* NEW FEATURE: Lifetime Savings Dashboard Card */}
+      <div style={{ marginTop: '40px', width: '100%', maxWidth: '600px' }} className="no-print">
         <div style={{ backgroundColor: '#2C3E50', color: 'white', padding: '20px', borderRadius: '12px', marginBottom: '30px', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
-          <div style={{ fontSize: '0.8rem', opacity: 0.8, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Client Savings to Date</div>
-          <div style={{ fontSize: '2.2rem', fontWeight: 'bold', color: '#27AE60' }}>
-            ${totalLifetimeSavings.toLocaleString()}
-          </div>
+          <div style={{ fontSize: '0.8rem', opacity: 0.8, marginBottom: '5px', textTransform: 'uppercase' }}>Total Client Savings to Date</div>
+          <div style={{ fontSize: '2.2rem', fontWeight: 'bold', color: '#27AE60' }}>${totalLifetimeSavings.toLocaleString()}</div>
         </div>
 
         <h4 style={{ color: '#2C3E50', borderBottom: '2px solid #DCDFE6', paddingBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
@@ -166,7 +171,7 @@ function App() {
         </h4>
         
         {(!history || history.length === 0) ? (
-          <p style={{ color: '#BDC3C7', textAlign: 'center', marginTop: '20px' }}>Your database is currently empty.</p>
+          <p style={{ color: '#BDC3C7', textAlign: 'center', marginTop: '20px' }}>No listings found.</p>
         ) : (
           history.map((item, index) => (
             <div key={index} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '8px', marginBottom: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -176,7 +181,7 @@ function App() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <div style={{ color: '#27AE60', fontWeight: 'bold' }}>+${item.savings?.toLocaleString()}</div>
-                <button onClick={() => handleDelete(item.address)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#E74C3C' }}>🗑️</button>
+                <button onClick={() => handleDelete(item.address)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E74C3C' }}>🗑️</button>
               </div>
             </div>
           ))
