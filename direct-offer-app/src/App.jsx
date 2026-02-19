@@ -7,7 +7,7 @@ function App() {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Use your live Render URL here
+  // Your live Render URL
   const API_URL = 'https://directoffer-backend.onrender.com';
 
   const fetchHistory = async () => {
@@ -60,7 +60,7 @@ function App() {
     }
   };
 
-// Calculate Lifetime Savings
+  // NEW FEATURE: Calculate Lifetime Savings from history array
   const totalLifetimeSavings = history.reduce((sum, item) => sum + (item.savings || 0), 0);
 
   return (
@@ -153,9 +153,9 @@ function App() {
       </div>
 
       <div style={{ marginTop: '40px', width: '100%', maxWidth: '500px' }} className="no-print">
-        {/* New Lifetime Savings Summary Card */}
+        {/* NEW FEATURE: Lifetime Savings Dashboard Card */}
         <div style={{ backgroundColor: '#2C3E50', color: 'white', padding: '20px', borderRadius: '12px', marginBottom: '30px', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
-          <div style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Client Savings</div>
+          <div style={{ fontSize: '0.8rem', opacity: 0.8, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Client Savings to Date</div>
           <div style={{ fontSize: '2.2rem', fontWeight: 'bold', color: '#27AE60' }}>
             ${totalLifetimeSavings.toLocaleString()}
           </div>
@@ -182,5 +182,8 @@ function App() {
           ))
         )}
       </div>
+    </div>
+  );
+}
 
 export default App;
