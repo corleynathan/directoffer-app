@@ -5,15 +5,20 @@ function App() {
   const [address, setAddress] = useState("");
   const [listingResult, setListingResult] = useState(null);
   const [history, setHistory] = useState([]);
-  const [isLoading, setIsLoading] = useState(false); // New: Loading state
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Defined URL here for easy updates
+  const API_URL = 'https://directoffer-backend.onrender.com';
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch('https://directoffer-backend.onrender.com');
+      const response = await fetch(`${API_URL}/recent-listings`);
       const data = await response.json();
-      setHistory(data);
+      // Safety check: Ensure data is an array before setting state
+      setHistory(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Could not fetch history:", error);
+      setHistory([]); // Set to empty array on error to prevent crash
     }
   };
 
@@ -24,7 +29,7 @@ function App() {
   const handleDelete = async (addressToDelete) => {
     if (!window.confirm(`Are you sure you want to delete ${addressToDelete}?`)) return;
     try {
-      await fetch(`https://directoffer-backend.onrender.com${encodeURIComponent(addressToDelete)}`, {
+      await fetch(`${API_URL}/delete-listing/${encodeURIComponent(addressToDelete)}`, {
         method: 'DELETE',
       });
       fetchHistory();
@@ -34,28 +39,27 @@ function App() {
   };
 
   const handleListHome = async () => {
-    // --- VALIDATION ---
     if (!address.trim()) {
       alert("Please enter a valid property address.");
       return;
     }
 
-    setIsLoading(true); // Start loading animation
+    setIsLoading(true);
 
     try {
-      const response = await fetch('https://directoffer-backend.onrender.com', {
+      const response = await fetch(`${API_URL}/list-property`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: address, price: homeValue })
       });
       const data = await response.json();
       setListingResult(data);
-      setAddress(""); // Clear input on success
+      setAddress(""); 
       fetchHistory(); 
     } catch (error) {
       alert("Error: Backend is offline!");
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 
@@ -129,48 +133,4 @@ function App() {
         {listingResult && (
           <div id="printable-area" style={{ marginTop: '25px', padding: '20px', backgroundColor: '#F0FDF4', borderRadius: '8px', border: '1px solid #BBF7D0' }}>
             <h4 style={{ color: '#166534', margin: '0 0 15px 0' }}>✅ Success! Listing Created</h4>
-            <div style={{ fontSize: '0.9rem', color: '#1F2937' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                <span>Standard 6% Commission:</span>
-                <span style={{ color: '#991B1B' }}>${listingResult.standard_comm}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span>DirectOffer 3% Fee:</span>
-                <span style={{ color: '#166534' }}>-${listingResult.direct_offer_fee}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.1rem', borderTop: '2px solid #BBF7D0', paddingTop: '10px' }}>
-                <span>Total Savings:</span>
-                <span style={{ color: '#166534' }}>${listingResult.savings}</span>
-              </div>
-            </div>
-            <button className="no-print" onClick={() => window.print()} style={{ marginTop: '20px', width: '100%', padding: '10px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>📄 Export PDF Report</button>
-          </div>
-        )}
-      </div>
-
-      <div style={{ marginTop: '40px', width: '100%', maxWidth: '500px' }} className="no-print">
-        <h4 style={{ color: '#2C3E50', borderBottom: '2px solid #DCDFE6', paddingBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
-          Recent Activity <span>({history.length})</span>
-        </h4>
-        {history.length === 0 ? (
-          <p style={{ color: '#BDC3C7', textAlign: 'center', marginTop: '20px' }}>Your database is currently empty.</p>
-        ) : (
-          history.map((item, index) => (
-            <div key={index} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '8px', marginBottom: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontWeight: 'bold', color: '#34495E' }}>{item.address}</div>
-                <div style={{ fontSize: '0.8rem', color: '#7F8C8D' }}>Value: ${item.price.toLocaleString()}</div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ color: '#27AE60', fontWeight: 'bold' }}>+${item.savings.toLocaleString()}</div>
-                <button onClick={() => handleDelete(item.address)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#E74C3C' }}>🗑️</button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-export default App;
+            <div style={{ fontSize: '0.9rem', color: '#1F2937'
