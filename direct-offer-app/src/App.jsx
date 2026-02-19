@@ -7,7 +7,7 @@ function App() {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- NEW: OFFER STATE ---
+  // --- OFFER STATE ---
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [viewingOffersFor, setViewingOffersFor] = useState(null);
   const [propertyOffers, setPropertyOffers] = useState([]);
@@ -42,7 +42,7 @@ function App() {
 
   useEffect(() => { fetchHistory(); }, []);
 
-  // --- NEW: FETCH OFFERS ---
+  // --- FETCH OFFERS ---
   const fetchOffers = async (addr) => {
     try {
       const response = await fetch(`${API_URL}/offers/${encodeURIComponent(addr)}`);
@@ -80,7 +80,7 @@ function App() {
       });
       const data = await response.json();
       setListingResult(data);
-      setOfferData({ ...offerData, offerPrice: homeValue }); // Default offer to asking price
+      setOfferData({ ...offerData, offerPrice: homeValue });
       setAddress(""); 
       fetchHistory(); 
     } catch (error) {
@@ -90,7 +90,7 @@ function App() {
     }
   };
 
-  // --- NEW: SUBMIT OFFER ---
+  // --- SUBMIT OFFER ---
   const handleSubmitOffer = async () => {
     if (!offerData.buyerName) { alert("Please enter a Buyer Name."); return; }
     try {
@@ -119,9 +119,11 @@ function App() {
       <style>{`
         @media print { 
           .no-print { display: none !important; } 
-          #printable-area { border: none !important; padding: 0 !important; width: 100% !important; }
+          #printable-area { border: 2px solid #166534 !important; padding: 40px !important; width: 100% !important; background-color: white !important; }
           body { background-color: white !important; }
+          .pdf-only-header { display: block !important; margin-bottom: 20px; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; }
         }
+        .pdf-only-header { display: none; }
         .input-focus:focus { border-color: #3498DB !important; outline: none; box-shadow: 0 0 5px rgba(52,152,219,0.3); }
         .input-field { padding: 12px; width: 100%; borderRadius: 6px; border: 2px solid #DCDFE6; boxSizing: border-box; marginBottom: 15px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
@@ -160,11 +162,16 @@ function App() {
         {/* VIEW 2: THE NET SHEET & OFFER FORM TRIGGER */}
         {listingResult && !showOfferForm && (
           <div id="printable-area">
+            {/* PDF ONLY HEADER */}
+            <div className="pdf-only-header">
+              <h1 style={{ color: '#2C3E50', margin: 0 }}>DirectOffer Report</h1>
+              <p style={{ color: '#7F8C8D' }}>Verified Savings & Equity Analysis</p>
+            </div>
+
             <h3 style={{ color: '#166534', margin: '0 0 5px 0' }}>Seller Net Sheet Comparison</h3>
             <p style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#374151' }}>Property: <strong>{listingResult.address}</strong></p>
             
             {(() => {
-              // FIX: Ensure we are pulling the price correctly from the backend response
               const priceVal = cleanNum(listingResult.price);
               const tradComm = priceVal * 0.06;
               const doFee = priceVal * 0.03;
@@ -203,9 +210,10 @@ function App() {
               );
             })()}
 
-            <div className="no-print" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+            <div className="no-print" style={{ marginTop: '20px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              <button onClick={() => window.print()} style={{ flex: 1, padding: '12px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>💾 Download PDF</button>
               <button onClick={() => setShowOfferForm(true)} style={{ flex: 1.5, padding: '12px', backgroundColor: '#27AE60', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>📩 Submit Digital Offer</button>
-              <button onClick={() => setListingResult(null)} style={{ flex: 1, padding: '12px', backgroundColor: '#ECF0F1', color: '#7F8C8D', border: 'none', borderRadius: '6px' }}>Reset</button>
+              <button onClick={() => setListingResult(null)} style={{ width: '100%', padding: '12px', backgroundColor: '#ECF0F1', color: '#7F8C8D', border: 'none', borderRadius: '6px' }}>Reset</button>
             </div>
           </div>
         )}
@@ -267,7 +275,6 @@ function App() {
               </div>
             </div>
             
-            {/* EXPANDABLE OFFER LIST */}
             {viewingOffersFor === item.address && (
               <div style={{marginTop:'15px', paddingTop:'10px', borderTop:'1px dashed #DCDFE6'}}>
                 <div style={{fontSize:'0.8rem', fontWeight:'bold', marginBottom:'10px'}}>Incoming Offers:</div>
