@@ -59,7 +59,7 @@ function App() {
     }
   };
 
-  const totalLifetimeSavings = history.reduce((sum, item) => sum + (item.savings || 0), 0);
+  const totalLifetimeSavings = history.reduce((sum, item) => sum + (Number(item.savings) || 0), 0);
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f7f6', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '50px 20px' }}>
@@ -67,13 +67,13 @@ function App() {
       <style>{`
         @media print { 
           .no-print { display: none !important; } 
-          #printable-area { border: none !important; padding: 0 !important; }
+          #printable-area { border: none !important; padding: 0 !important; width: 100% !important; }
           body { background-color: white !important; }
         }
         .input-focus:focus { border-color: #3498DB !important; outline: none; box-shadow: 0 0 5px rgba(52,152,219,0.3); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
-        th { text-align: left; padding: 10px; border-bottom: 2px solid #BBF7D0; color: #166534; }
-        td { padding: 10px; border-bottom: 1px solid #BBF7D0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid #BBF7D0; color: #166534; }
+        td { padding: 12px; border-bottom: 1px solid #BBF7D0; }
       `}</style>
 
       <header style={{ marginBottom: '40px', textAlign: 'center' }} className="no-print">
@@ -123,38 +123,49 @@ function App() {
             <h3 style={{ color: '#166534', margin: '0 0 5px 0' }}>Seller Net Sheet Comparison</h3>
             <p style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#374151' }}>Property: <strong>{listingResult.address}</strong></p>
             
-            <table>
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th>Traditional (6%)</th>
-                  <th>DirectOffer (3%)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Sale Price</td>
-                  {/* We use Number() and a fallback to 0 to prevent NaN */}
-                  <td>${Number(listingResult.price || homeValue).toLocaleString()}</td>
-                  <td>${Number(listingResult.price || homeValue).toLocaleString()}</td>
-                </tr>
-                <tr>
-                  <td>Brokerage Fee</td>
-                  <td style={{ color: '#991B1B' }}>-${Number(listingResult.standard_comm || 0).toLocaleString()}</td>
-                  <td style={{ color: '#166534', fontWeight: 'bold' }}>-${Number(listingResult.direct_offer_fee || 0).toLocaleString()}</td>
-                </tr>
-                <tr style={{ backgroundColor: '#DCFCE7', fontWeight: 'bold' }}>
-                  <td>ESTIMATED NET</td>
-                  <td>${(Number(listingResult.price || homeValue) - Number(listingResult.standard_comm || 0)).toLocaleString()}</td>
-                  <td style={{ color: '#15803D' }}>${(Number(listingResult.price || homeValue) - Number(listingResult.direct_offer_fee || 0)).toLocaleString()}</td>
-                </tr>
-              </tbody>
-            </table>
+            {/* Helper variables to ensure no NaN occurs */}
+            {(() => {
+              const currentPrice = Number(listingResult.price || homeValue || 0);
+              const tradComm = Number(listingResult.standard_comm || (currentPrice * 0.06) || 0);
+              const doFee = Number(listingResult.direct_offer_fee || (currentPrice * 0.03) || 0);
+              const savings = Number(listingResult.savings || (tradComm - doFee) || 0);
 
-            <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#15803D', color: 'white', borderRadius: '6px', textAlign: 'center' }}>
-              <span style={{ fontSize: '0.9rem' }}>Additional Equity Gained:</span>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${listingResult.savings?.toLocaleString()}</div>
-            </div>
+              return (
+                <>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Description</th>
+                        <th>Traditional (6%)</th>
+                        <th>DirectOffer (3%)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Sale Price</td>
+                        <td>${currentPrice.toLocaleString()}</td>
+                        <td>${currentPrice.toLocaleString()}</td>
+                      </tr>
+                      <tr>
+                        <td>Brokerage Fee</td>
+                        <td style={{ color: '#991B1B' }}>-${tradComm.toLocaleString()}</td>
+                        <td style={{ color: '#166534', fontWeight: 'bold' }}>-${doFee.toLocaleString()}</td>
+                      </tr>
+                      <tr style={{ backgroundColor: '#DCFCE7', fontWeight: 'bold' }}>
+                        <td>ESTIMATED NET</td>
+                        <td>${(currentPrice - tradComm).toLocaleString()}</td>
+                        <td style={{ color: '#15803D' }}>${(currentPrice - doFee).toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#15803D', color: 'white', borderRadius: '6px', textAlign: 'center' }}>
+                    <span style={{ fontSize: '0.9rem' }}>Additional Equity Gained:</span>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${savings.toLocaleString()}</div>
+                  </div>
+                </>
+              );
+            })()}
 
             <button className="no-print" onClick={() => window.print()} style={{ marginTop: '20px', width: '100%', padding: '10px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>📄 Export Professional Report</button>
           </div>
@@ -178,10 +189,10 @@ function App() {
             <div key={index} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '8px', marginBottom: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontWeight: 'bold', color: '#34495E' }}>{item.address}</div>
-                <div style={{ fontSize: '0.8rem', color: '#7F8C8D' }}>Value: ${item.price?.toLocaleString()}</div>
+                <div style={{ fontSize: '0.8rem', color: '#7F8C8D' }}>Value: ${Number(item.price).toLocaleString()}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ color: '#27AE60', fontWeight: 'bold' }}>+${item.savings?.toLocaleString()}</div>
+                <div style={{ color: '#27AE60', fontWeight: 'bold' }}>+${Number(item.savings).toLocaleString()}</div>
                 <button onClick={() => handleDelete(item.address)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E74C3C' }}>🗑️</button>
               </div>
             </div>
