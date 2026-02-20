@@ -37,10 +37,13 @@ function App() {
     { id: 'full', title: 'Full Service', price: '1% + $1.5k', type: 'Hybrid', features: ['Dedicated Advisor', 'Contract Negotiation', 'Premier Marketing', 'Pro Photos'], color: '#2C3E50', calc: (val) => (val * 0.01) + 1500 }
   ];
 
+  // --- GOOGLE AUTOCOMPLETE INITIALIZATION ---
   useEffect(() => {
     let autocomplete;
     if (view === 'tool' && inputRef.current && window.google) {
-      autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, { types: ["address"], componentRestrictions: { country: "us" } });
+      autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, { 
+        types: ["address"], componentRestrictions: { country: "us" } 
+      });
       autocomplete.addListener("place_changed", () => {
         const place = autocomplete.getPlace();
         if (place?.formatted_address) setAddress(place.formatted_address);
@@ -50,6 +53,7 @@ function App() {
     return () => { if (autocomplete && window.google) window.google.maps.event.clearInstanceListeners(autocomplete); };
   }, [view]);
 
+  // --- DATA FETCHING & HELPERS ---
   const cleanNum = (val) => {
     if (!val) return 0;
     if (typeof val === 'number') return val;
@@ -61,13 +65,13 @@ function App() {
       const response = await fetch(`${API_URL}/recent-listings`);
       const data = await response.json();
       setHistory(Array.isArray(data) ? data : []);
-    } catch (error) { setHistory([]); }
+    } catch (error) { console.error("Could not fetch history:", error); }
   };
 
   useEffect(() => { fetchHistory(); }, []);
 
   const handleListHome = async () => {
-    if (!address.trim()) return alert("Please enter an address.");
+    if (!address.trim()) return alert("Please enter a valid property address.");
     setIsLoading(true);
     try {
       const response = await fetch(`${API_URL}/list-property`, {
@@ -77,10 +81,26 @@ function App() {
       });
       const data = await response.json();
       setListingResult(data);
-      setAddress("");
-      fetchHistory();
-    } catch (error) { alert("Backend is offline!"); }
+      setOfferData({ ...offerData, offerPrice: homeValue });
+      setAddress(""); 
+      fetchHistory(); 
+    } catch (error) { alert("Error: Backend is offline!"); }
     finally { setIsLoading(false); }
+  };
+
+  const handleSubmitOffer = async () => {
+    if (!offerData.buyerName) return alert("Please enter a Buyer Name.");
+    try {
+      const response = await fetch(`${API_URL}/submit-offer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...offerData, listingAddress: listingResult.address })
+      });
+      if (response.ok) {
+        alert("Success! Your offer has been submitted.");
+        setShowOfferForm(false);
+      }
+    } catch (error) { alert("Error submitting offer."); }
   };
 
   return (
@@ -91,9 +111,7 @@ function App() {
         .pac-container { z-index: 10000 !important; }
       `}</style>
 
-      {view === 'landing' && (
-        <div style={{ padding: '20px' }}><h1>Welcome to DirectOffer</h1></div>
-      )}
+      {view === 'landing' && null}
       
       {view === 'tool' && (
         <div style={{ padding: '50px 20px', maxWidth: '600px', margin: '0 auto' }}>
