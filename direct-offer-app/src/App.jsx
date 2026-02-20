@@ -1,28 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 function App() {
+  // --- NAVIGATION & TIER STATE ---
   const [view, setView] = useState('landing');
-  const [address, setAddress] = useState("");
+  const [selectedTier, setSelectedTier] = useState(null);
+
+  // --- CORE TOOL STATE ---
   const [homeValue, setHomeValue] = useState(500000);
+  const [address, setAddress] = useState("");
   const [listingResult, setListingResult] = useState(null);
   const [history, setHistory] = useState([]);
-  const [propertyOffers, setPropertyOffers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // --- REFS FOR GOOGLE MAPS ---
+  const inputRef = useRef(null);
+  const autoCompleteRef = useRef(null);
+
+  // --- OFFER STATE ---
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [offerData, setOfferData] = useState({
-    buyerName: "", offerPrice: 500000, earnestMoney: 5000,
-    financingType: "Conventional", closingDate: "", contingencies: ""
+    buyerName: "",
+    offerPrice: 500000,
+    earnestMoney: 5000,
+    financingType: "Conventional",
+    closingDate: "",
+    contingencies: ""
   });
 
-  const inputRef = useRef(null);
   const API_URL = 'https://directoffer-backend.onrender.com';
 
+  // --- PRICING TIERS ---
   const tiers = [
-    { id: 'entry', title: 'The Entry', price: '$499', type: 'Flat Fee', features: ['MLS Access', 'Digital Docs'], color: '#34495E' },
-    { id: 'hybrid', title: 'The Hybrid', price: '$2,499', type: 'Flat Fee', features: ['Photos', 'Yard Sign', 'Syndication'], color: '#27AE60' },
-    { id: 'full', title: 'Full Service', price: '1% + $1.5k', type: 'Hybrid', features: ['Advisor', 'Negotiation', 'Marketing'], color: '#2C3E50' }
+    { id: 'entry', title: 'The Entry', price: '$499', type: 'Flat Fee', features: ['MLS Listing Access', 'DirectOffer Portal', 'Digital Document Storage'], color: '#34495E' },
+    { id: 'hybrid', title: 'The Hybrid', price: '$2,499', type: 'Flat Fee', features: ['Professional Photos', 'Yard Signage', 'MLS Syndication', 'Offer Management'], color: '#27AE60' },
+    { id: 'full', title: 'Full Service', price: '1% + $1.5k', type: 'Hybrid', features: ['Dedicated Advisor', 'Contract Negotiation', 'Premier Marketing', 'Pro Photos'], color: '#2C3E50' }
   ];
 
-  // Google Maps Autocomplete
+  // --- GOOGLE AUTOCOMPLETE INITIALIZATION ---
   useEffect(() => {
     if (view === 'tool' && inputRef.current && window.google) {
       const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, { 
@@ -35,46 +49,51 @@ function App() {
     }
   }, [view]);
 
+  // --- API DATA FETCHING ---
   const fetchHistory = async () => {
     try {
-      const res = await fetch(`${API_URL}/recent-listings`);
-      const data = await res.json();
+      const response = await fetch(`${API_URL}/recent-listings`);
+      const data = await response.json();
       setHistory(Array.isArray(data) ? data : []);
-    } catch (e) { console.error(e); }
+    } catch (error) { console.error("History fetch failed:", error); }
   };
 
   useEffect(() => { fetchHistory(); }, []);
 
   const handleListHome = async () => {
-    if (!address.trim()) return alert("Enter an address");
-    const res = await fetch(`${API_URL}/list-property`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address, price: homeValue })
-    });
-    const data = await res.json();
-    setListingResult(data);
-    fetchHistory();
+    if (!address.trim()) return alert("Please enter a valid property address.");
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/list-property`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, price: homeValue })
+      });
+      const data = await response.json();
+      setListingResult(data);
+      fetchHistory();
+    } catch (error) { alert("Backend is offline!"); }
+    finally { setIsLoading(false); }
   };
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f7f6', fontFamily: 'sans-serif', padding: '20px' }}>
       <style>{`
-        .input-focus:focus { border-color: #3498DB !important; outline: none; }
+        .input-focus:focus { border-color: #3498DB !important; outline: none; box-shadow: 0 0 5px rgba(52,152,219,0.3); }
         .input-field { padding: 12px; width: 100%; border-radius: 6px; border: 2px solid #DCDFE6; margin-bottom: 15px; }
         .pac-container { z-index: 10000 !important; }
       `}</style>
 
       {view === 'landing' && (
-        <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
           <h1>Welcome to DirectOffer</h1>
-          <button onClick={() => setView('tool')} style={{ padding: '15px 30px', fontSize: '18px' }}>Get Started</button>
-          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '40px' }}>
-            {tiers.map(t => (
-              <div key={t.id} style={{ border: `2px solid ${t.color}`, padding: '20px', borderRadius: '10px' }}>
-                <h3>{t.title}</h3>
-                <p><strong>{t.price}</strong></p>
-                <ul>{t.features.map(f => <li key={f}>{f}</li>)}</ul>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '40px' }}>
+            {tiers.map(tier => (
+              <div key={tier.id} style={{ border: `2px solid ${tier.color}`, padding: '20px', borderRadius: '8px', background: '#fff' }}>
+                <h3 style={{ color: tier.color }}>{tier.title}</h3>
+                <p><strong>{tier.price}</strong></p>
+                <ul style={{ textAlign: 'left' }}>{tier.features.map(f => <li key={f}>{f}</li>)}</ul>
+                <button onClick={() => { setSelectedTier(tier); setView('tool'); }}>Select {tier.title}</button>
               </div>
             ))}
           </div>
@@ -84,13 +103,15 @@ function App() {
       {view === 'tool' && (
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <h2>Property Listing Tool</h2>
-          <input ref={inputRef} className="input-field" placeholder="Search address..." value={address} onChange={(e) => setAddress(e.target.value)} />
-          <button onClick={handleListHome} style={{ width: '100%', padding: '15px', background: '#3498DB', color: '#fff', border: 'none', borderRadius: '5px' }}>List My Home</button>
+          <input ref={inputRef} className="input-focus input-field" placeholder="Search address..." value={address} onChange={(e) => setAddress(e.target.value)} />
+          <button onClick={handleListHome} disabled={isLoading}>
+            {isLoading ? 'Listing...' : 'List My Home'}
+          </button>
           
-          <h3>Recent Activity</h3>
+          <h3>Recent History</h3>
           {history.map((h, i) => (
-            <div key={i} style={{ padding: '15px', background: '#fff', margin: '10px 0', borderRadius: '5px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-              <strong>{h.address}</strong> - Savings: ${h.savings}
+            <div key={i} style={{ padding: '15px', background: '#fff', margin: '10px 0', borderRadius: '4px', borderLeft: '4px solid #3498DB' }}>
+              {h.address}
             </div>
           ))}
         </div>
