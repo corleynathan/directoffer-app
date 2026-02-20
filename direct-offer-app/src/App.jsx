@@ -31,25 +31,6 @@ function App() {
 
   const API_URL = 'https://directoffer-backend.onrender.com';
 
-  // --- PRICING TIER DEFINITIONS ---
-  const tiers = [
-    { 
-      id: 'entry', title: 'The Entry', price: '$499', type: 'Flat Fee', 
-      features: ['MLS Listing Access', 'DirectOffer Portal', 'Digital Document Storage'], 
-      color: '#34495E', calc: () => 499 
-    },
-    { 
-      id: 'hybrid', title: 'The Hybrid', price: '$2,499', type: 'Flat Fee', 
-      features: ['Professional Photos', 'Yard Signage', 'MLS Syndication', 'Offer Management'], 
-      color: '#27AE60', calc: () => 2499, popular: true 
-    },
-    { 
-      id: 'full', title: 'Full Service', price: '1% + $1.5k', type: 'Hybrid', 
-      features: ['Dedicated Advisor', 'Contract Negotiation', 'Premier Marketing', 'Pro Photos'], 
-      color: '#2C3E50', calc: (val) => (val * 0.01) + 1500 
-    }
-  ];
-
   // --- GOOGLE AUTOCOMPLETE INITIALIZATION ---
   useEffect(() => {
     let autocomplete;
@@ -72,63 +53,12 @@ function App() {
       autoCompleteRef.current = autocomplete;
     }
 
-    // Cleanup to prevent memory leaks or duplicate listeners
     return () => {
       if (autocomplete && window.google) {
         window.google.maps.event.clearInstanceListeners(autocomplete);
       }
     };
   }, [view]);
-
-  // --- DATA FETCHING & HELPERS ---
-  const cleanNum = (val) => {
-    if (!val) return 0;
-    if (typeof val === 'number') return val;
-    const cleaned = val.toString().replace(/[^0-9.-]+/g, "");
-    return parseFloat(cleaned) || 0;
-  };
-
-  const fetchHistory = async () => {
-    try {
-      const response = await fetch(`${API_URL}/recent-listings`);
-      const data = await response.json();
-      setHistory(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Could not fetch history:", error);
-      setHistory([]);
-    }
-  };
-
-  useEffect(() => { fetchHistory(); }, []);
-
-  const handleTierSelect = (tier) => {
-    setSelectedTier(tier);
-    setView('tool');
-    window.scrollTo(0,0);
-  };
-
-  const fetchOffers = async (addr) => {
-    try {
-      const response = await fetch(`${API_URL}/offers/${encodeURIComponent(addr)}`);
-      const data = await response.json();
-      setPropertyOffers(data);
-      setViewingOffersFor(addr);
-    } catch (error) {
-      console.error("Error fetching offers:", error);
-    }
-  };
-
-  const handleDelete = async (addressToDelete) => {
-    if (!window.confirm(`Are you sure you want to delete ${addressToDelete}?`)) return;
-    try {
-      await fetch(`${API_URL}/delete-listing/${encodeURIComponent(addressToDelete)}`, {
-        method: 'DELETE',
-      });
-      fetchHistory();
-    } catch (error) {
-      console.error("Delete failed:", error);
-    }
-  };
 
   const handleListHome = async () => {
     if (!address.trim()) {
@@ -144,37 +74,13 @@ function App() {
       });
       const data = await response.json();
       setListingResult(data);
-      setOfferData({ ...offerData, offerPrice: homeValue });
       setAddress(""); 
-      fetchHistory(); 
     } catch (error) {
       alert("Error: Backend is offline!");
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleSubmitOffer = async () => {
-    if (!offerData.buyerName) { alert("Please enter a Buyer Name."); return; }
-    try {
-      const response = await fetch(`${API_URL}/submit-offer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...offerData,
-          listingAddress: listingResult.address
-        })
-      });
-      if (response.ok) {
-        alert("Success! Your offer has been submitted.");
-        setShowOfferForm(false);
-      }
-    } catch (error) {
-      alert("Error submitting offer.");
-    }
-  };
-
-  const totalLifetimeSavings = history.reduce((sum, item) => sum + cleanNum(item.savings), 0);
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f7f6', fontFamily: 'sans-serif' }}>
@@ -184,11 +90,13 @@ function App() {
         .pac-container { z-index: 10000 !important; }
       `}</style>
 
-      {/* Logic for View Rendering remains unchanged */}
-      {view === 'landing' && ( /* Landing Page Content */ )}
+      {/* Logic for View Rendering */}
+      {view === 'landing' && (
+        <div>Landing Page Placeholder - Click to start tool</div>
+      )}
+      
       {view === 'tool' && (
         <div style={{ padding: '50px 20px', maxWidth: '600px', margin: '0 auto' }}>
-          {/* ... */}
           <input 
             type="text" 
             ref={inputRef} 
@@ -197,7 +105,7 @@ function App() {
             value={address} 
             onChange={(e) => setAddress(e.target.value)} 
           />
-          {/* ... */}
+          <button onClick={handleListHome}>List My Home</button>
         </div>
       )}
     </div>
