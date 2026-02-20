@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'; // Added useRef
+import Dashboard from './Dashboard';
 
 function App() {
   // --- NAVIGATION & TIER STATE ---
@@ -9,6 +10,7 @@ function App() {
   const [homeValue, setHomeValue] = useState(500000);
   const [address, setAddress] = useState("");
   const [listingResult, setListingResult] = useState(null);
+  const [savedListing, setSavedListing] = useState(null); // Added for dashboard persistence
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -52,7 +54,6 @@ function App() {
 
   // --- GOOGLE AUTOCOMPLETE INITIALIZATION ---
   useEffect(() => {
-    // Only run if we are in tool view and the input element exists
     if (view === 'tool' && inputRef.current && window.google) {
       autoCompleteRef.current = new window.google.maps.places.Autocomplete(
         inputRef.current,
@@ -66,13 +67,19 @@ function App() {
         }
       });
     }
-  }, [view, listingResult]); // Re-run if we reset or change views
+  }, [view, listingResult]); 
 
+  // --- HELPERS ---
   const cleanNum = (val) => {
     if (!val) return 0;
     if (typeof val === 'number') return val;
     const cleaned = val.toString().replace(/[^0-9.-]+/g, "");
     return parseFloat(cleaned) || 0;
+  };
+
+  const handleSaveToDashboard = () => {
+    setSavedListing(listingResult);
+    setView('dashboard');
   };
 
   const fetchHistory = async () => {
@@ -132,7 +139,6 @@ function App() {
       const data = await response.json();
       setListingResult(data);
       setOfferData({ ...offerData, offerPrice: homeValue });
-      // Address is cleared after submission to reset the form
       setAddress(""); 
       fetchHistory(); 
     } catch (error) {
@@ -171,14 +177,7 @@ function App() {
         @media print { 
           .no-print { display: none !important; } 
           body { background-color: white !important; margin: 0 !important; padding: 0 !important; display: block !important; }
-          #printable-area { 
-            border: 2px solid #166534 !important; 
-            padding: 30px !important; 
-            width: 90% !important; 
-            margin: 20px auto !important; 
-            background-color: white !important; 
-            display: block !important;
-          }
+          #printable-area { border: 2px solid #166534 !important; padding: 30px !important; width: 90% !important; margin: 20px auto !important; background-color: white !important; display: block !important; }
           .pdf-only-header { display: block !important; margin-bottom: 25px; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; }
           table { width: 100% !important; border-collapse: collapse !important; }
         }
@@ -253,7 +252,7 @@ function App() {
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#2C3E50' }}>Property Address</label>
                   <input 
                     type="text" 
-                    ref={inputRef} // Bind the Google Ref here
+                    ref={inputRef}
                     className="input-focus input-field" 
                     placeholder="Search address..." 
                     value={address} 
@@ -324,6 +323,7 @@ function App() {
                 })()}
 
                 <div className="no-print" style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <button onClick={handleSaveToDashboard} style={{ width: '100%', padding: '12px', backgroundColor: '#2C3E50', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Save to Dashboard</button>
                   <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                     <button onClick={() => window.print()} style={{ flex: 1, padding: '14px', backgroundColor: '#3498DB', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
                       💾 Download PDF
@@ -396,6 +396,14 @@ function App() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* --- DASHBOARD VIEW --- */}
+      {view === 'dashboard' && (
+        <Dashboard 
+          listing={savedListing} 
+          onViewChange={setView} 
+        />
       )}
     </div>
   );
