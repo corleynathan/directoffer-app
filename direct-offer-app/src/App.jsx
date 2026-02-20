@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Added useRef
 
 function App() {
   // --- NAVIGATION & TIER STATE ---
-  const [view, setView] = useState('landing'); // 'landing' or 'tool'
+  const [view, setView] = useState('landing');
   const [selectedTier, setSelectedTier] = useState(null);
 
   // --- CORE TOOL STATE ---
@@ -11,6 +11,10 @@ function App() {
   const [listingResult, setListingResult] = useState(null);
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // --- REFS FOR GOOGLE MAPS ---
+  const inputRef = useRef(null);
+  const autoCompleteRef = useRef(null);
 
   // --- OFFER STATE ---
   const [showOfferForm, setShowOfferForm] = useState(false);
@@ -45,6 +49,24 @@ function App() {
       color: '#2C3E50', calc: (val) => (val * 0.01) + 1500 
     }
   ];
+
+  // --- GOOGLE AUTOCOMPLETE INITIALIZATION ---
+  useEffect(() => {
+    // Only run if we are in tool view and the input element exists
+    if (view === 'tool' && inputRef.current && window.google) {
+      autoCompleteRef.current = new window.google.maps.places.Autocomplete(
+        inputRef.current,
+        { types: ["address"], componentRestrictions: { country: "us" } }
+      );
+
+      autoCompleteRef.current.addListener("place_changed", async () => {
+        const place = await autoCompleteRef.current.getPlace();
+        if (place.formatted_address) {
+          setAddress(place.formatted_address);
+        }
+      });
+    }
+  }, [view, listingResult]); // Re-run if we reset or change views
 
   const cleanNum = (val) => {
     if (!val) return 0;
@@ -110,6 +132,7 @@ function App() {
       const data = await response.json();
       setListingResult(data);
       setOfferData({ ...offerData, offerPrice: homeValue });
+      // Address is cleared after submission to reset the form
       setAddress(""); 
       fetchHistory(); 
     } catch (error) {
@@ -166,6 +189,7 @@ function App() {
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
         th { text-align: left; padding: 12px; border-bottom: 2px solid #BBF7D0; color: #166534; }
         td { padding: 12px; border-bottom: 1px solid #BBF7D0; }
+        .pac-container { border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none; font-family: sans-serif; }
       `}</style>
 
       {/* --- LANDING PAGE VIEW --- */}
@@ -227,7 +251,14 @@ function App() {
                 <h3 style={{ color: '#34495E', marginTop: 0 }}>Create New Listing</h3>
                 <div style={{ marginBottom: '25px' }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#2C3E50' }}>Property Address</label>
-                  <input type="text" className="input-focus input-field" placeholder="e.g. 123 Main St" value={address} onChange={(e) => setAddress(e.target.value)} />
+                  <input 
+                    type="text" 
+                    ref={inputRef} // Bind the Google Ref here
+                    className="input-focus input-field" 
+                    placeholder="Search address..." 
+                    value={address} 
+                    onChange={(e) => setAddress(e.target.value)} 
+                  />
                 </div>
                 <div style={{ marginBottom: '25px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -256,7 +287,7 @@ function App() {
                 {(() => {
                   const priceVal = cleanNum(listingResult.price);
                   const tradComm = priceVal * 0.06;
-                  const doFee = selectedTier.calc(priceVal); // DYNAMIC CALCULATION BASED ON TIER
+                  const doFee = selectedTier.calc(priceVal); 
                   const savingsVal = tradComm - doFee;
 
                   return (
