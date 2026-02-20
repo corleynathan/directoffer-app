@@ -5,7 +5,7 @@ import sqlite3
 
 app = FastAPI()
 
-origins = [*]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
