@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import React, { useState, useEffect, useRef } from 'react'; // Added useRef
 import Dashboard from './components/Dashboard';
 
 function App() {
