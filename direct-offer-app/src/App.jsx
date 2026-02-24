@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Dashboard from './components/Dashboard';
+import Dashboard from './Dashboard';
 
 function App() {
   // --- NAVIGATION & TIER STATE ---
